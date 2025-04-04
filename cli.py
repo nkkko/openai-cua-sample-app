@@ -1,4 +1,5 @@
 import argparse
+import os
 from agent.agent import Agent
 from computers import (
     BrowserbaseBrowser,
@@ -6,6 +7,7 @@ from computers import (
     ScrapybaraUbuntu,
     LocalPlaywrightComputer,
     DockerComputer,
+    DaytonaComputer,
 )
 
 def acknowledge_safety_check_callback(message: str) -> bool:
@@ -27,6 +29,7 @@ def main():
             "browserbase",
             "scrapybara-browser",
             "scrapybara-ubuntu",
+            "daytona",
         ],
         help="Choose the computer environment to use.",
         default="local-playwright",
@@ -53,6 +56,31 @@ def main():
         help="Start the browsing session with a specific URL (only for browser environments).",
         default="https://bing.com",
     )
+    # Daytona parameters
+    parser.add_argument(
+        "--daytona-api-key",
+        type=str,
+        help="API key for Daytona (only for daytona computer).",
+        default=os.environ.get("DAYTONA_API_KEY"),
+    )
+    parser.add_argument(
+        "--daytona-server-url",
+        type=str,
+        help="Server URL for Daytona (only for daytona computer).",
+        default=os.environ.get("DAYTONA_SERVER_URL"),
+    )
+    parser.add_argument(
+        "--daytona-target",
+        type=str,
+        help="Target region for Daytona (only for daytona computer).",
+        default=os.environ.get("DAYTONA_TARGET", "us"),
+    )
+    parser.add_argument(
+        "--display",
+        type=str,
+        help="X11 display identifier (only for docker and daytona computers).",
+        default=":99",
+    )
     args = parser.parse_args()
 
     computer_mapping = {
@@ -61,11 +89,26 @@ def main():
         "browserbase": BrowserbaseBrowser,
         "scrapybara-browser": ScrapybaraBrowser,
         "scrapybara-ubuntu": ScrapybaraUbuntu,
+        "daytona": DaytonaComputer,
     }
 
     ComputerClass = computer_mapping[args.computer]
 
-    with ComputerClass() as computer:
+    # Initialize the appropriate computer with any necessary parameters
+    if args.computer == "daytona":
+        if not args.daytona_api_key or not args.daytona_server_url:
+            raise ValueError("Daytona API key and server URL are required for the Daytona computer")
+        
+        computer_instance = ComputerClass(
+            api_key=args.daytona_api_key,
+            server_url=args.daytona_server_url,
+            target=args.daytona_target,
+            display=args.display
+        )
+    else:
+        computer_instance = ComputerClass()
+
+    with computer_instance as computer:
         agent = Agent(
             computer=computer,
             acknowledge_safety_check_callback=acknowledge_safety_check_callback,

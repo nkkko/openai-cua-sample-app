@@ -15,6 +15,12 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+If you plan to use the Daytona computer environment, you'll also need to install the Daytona SDK:
+
+```shell
+pip install daytona-sdk
+```
+
 Run CLI to let CUA use a local browser window, using [playwright](https://playwright.dev/). (Stop with CTRL+C)
 
 ```shell
@@ -29,6 +35,7 @@ Other included sample [computer environments](#computer-environments):
 - [Docker](https://docker.com/) (containerized desktop)
 - [Browserbase](https://www.browserbase.com/) (remote browser, requires account)
 - [Scrapybara](https://scrapybara.com) (remote browser or computer, requires account)
+- [Daytona](https://daytona.io/) (cloud development sandbox, requires account)
 - ...or implement your own `Computer`!
 
 ## Overview
@@ -96,6 +103,7 @@ This sample app provides a set of implemented `Computer` examples, but feel free
 | `Browserbase`       | browserbase        | `browser` | Remote browser environment        | [Browserbase](https://www.browserbase.com/) API key in `.env`    |
 | `ScrapybaraBrowser` | scrapybara-browser | `browser` | Remote browser environment        | [Scrapybara](https://scrapybara.com/dashboard) API key in `.env` |
 | `ScrapybaraUbuntu`  | scrapybara-ubuntu  | `linux`   | Remote Ubuntu desktop environment | [Scrapybara](https://scrapybara.com/dashboard) API key in `.env` |
+| `DaytonaComputer`   | daytona            | `linux`   | Daytona cloud sandbox environment | [Daytona SDK](https://daytona.io/) API key                       |
 
 Using the CLI, you can run the sample app with different computer environments using the options listed above:
 
@@ -139,7 +147,34 @@ docker run --rm -it --name cua-sample-app -p 5900:5900 --dns=1.1.1.3 -e DISPLAY=
 ### Hosted environment setup
 
 This repository contains example implementations of third-party hosted environments.
-To use these, you will need to set up an account with the service by following the links aboveand add your API key to the `.env` file.
+To use these, you will need to set up an account with the service by following the links above and add your API key to the `.env` file.
+
+### Daytona Setup
+
+To use the Daytona computer environment, you'll need to:
+
+1. Create an account at [Daytona.io](https://daytona.io/)
+2. Install the Daytona SDK: `pip install daytona-sdk`
+3. Set up your Daytona API credentials:
+   
+   Either via environment variables:
+   ```shell
+   export DAYTONA_API_KEY=your_api_key
+   export DAYTONA_SERVER_URL=https://your-server.com
+   export DAYTONA_TARGET=us  # optional, defaults to "us"
+   ```
+   
+   Or provide them directly to the CLI:
+   ```shell
+   python cli.py --computer daytona --daytona-api-key your_api_key --daytona-server-url https://your-server.com
+   ```
+
+The Daytona computer uses the Docker image `nikodaytona/ubuntu-vnc-firefox:1.0.0` by default, which provides a Linux environment with VNC and Firefox.
+
+You can also run the Daytona example:
+```shell
+python -m examples.daytona_example
+```
 
 ## Function Calling
 
